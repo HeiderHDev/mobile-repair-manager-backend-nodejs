@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import { Repository } from 'typeorm';
 import { JwtAdapter } from '../../config';
-import { UserEntity as UserDB } from '../../data/mysql/entities/user.entity';
 import { MySQLDatabase } from '../../data';
+import { UserEntity as UserDB } from '../../data/mysql/entities/user.entity';
 import { UserEntity } from '../../domain/entities/user.entity';
 
 export class AuthMiddleware {
