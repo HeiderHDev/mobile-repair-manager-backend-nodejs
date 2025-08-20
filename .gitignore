@@ -7,6 +7,7 @@
 
 /mongo
 /postgres
+/mysql
 node_modules/
 dist/
 build/
