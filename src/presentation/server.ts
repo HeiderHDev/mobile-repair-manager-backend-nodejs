@@ -1,13 +1,13 @@
 import path from 'path';
 import express, { Router } from 'express';
 import fileUpload from 'express-fileupload';
+import cors from 'cors';
 
 interface Options {
   port: number;
   routes: Router;
   public_path?: string;
 }
-
 
 export class Server {
 
@@ -27,11 +27,18 @@ export class Server {
   
   
   async start() {
+
+    this.app.use(cors({
+      origin: ['http://localhost:4200', 'http://127.0.0.1:4200'],
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    }));
     
 
     //* Middlewares
-    this.app.use( express.json() ); // raw
-    this.app.use( express.urlencoded({ extended: true }) ); // x-www-form-urlencoded
+    this.app.use( express.json() );
+    this.app.use( express.urlencoded({ extended: true }) );
     this.app.use(fileUpload({
       limits: { fileSize: 50 * 1024 * 1024 },
     }));

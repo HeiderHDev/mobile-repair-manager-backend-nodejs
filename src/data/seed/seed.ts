@@ -1,70 +1,82 @@
 import { envs } from '../../config';
-import { CategoryModel, MongoDatabase, ProductModel, UserModel } from '../mongo';
-import { seedData } from './data';
+import { MySQLDatabase } from '../mysql/mysql-database';
+import { UserEntity, UserRole } from '../mysql/entities/user.entity';
+import { bcryptAdapter } from '../../config';
 
-
-(async()=> {
-  await MongoDatabase.connect({
-    dbName: envs.MONGO_DB_NAME,
-    mongoUrl: envs.MONGO_URL
-  })
+(async () => {
+  await MySQLDatabase.connect({
+    host: envs.DB_HOST,
+    port: envs.DB_PORT,
+    username: envs.DB_USERNAME,
+    password: envs.DB_PASSWORD,
+    database: envs.DB_DATABASE,
+  });
 
   await main();
 
-
-  await MongoDatabase.disconnect();
+  await MySQLDatabase.disconnect();
 })();
-
-
-const randomBetween0AndX = ( x: number ) => {
-  return Math.floor( Math.random() * x );
-}
-
-
 
 async function main() {
 
-  // 0. Borrar todo!
-  await Promise.all([
-    UserModel.deleteMany(),
-    CategoryModel.deleteMany(),
-    ProductModel.deleteMany(),
-  ])
+  console.log('🌱 Starting database seeding...');
 
+  const userRepository = MySQLDatabase.connection.getRepository(UserEntity);
 
-  // 1. Crear usuarios
-  const users = await UserModel.insertMany( seedData.users );
+  await userRepository.clear();
 
-  // 2. Crear categorias
-  const categories = await CategoryModel.insertMany(
-    seedData.categories.map( category => {
+  const superAdmin = new UserEntity();
+  superAdmin.username = 'superadmin';
+  superAdmin.email = 'superadmin@repairshop.com';
+  superAdmin.fullName = 'Super Administrador';
+  superAdmin.password = bcryptAdapter.hash('admin123');
+  superAdmin.role = UserRole.SUPER_ADMIN;
+  superAdmin.isActive = true;
 
-      return {
-        ...category,
-        user: users[0]._id
-      }
+  await userRepository.save(superAdmin);
+  console.log('👤 Super Admin created: superadmin / admin123');
 
-    })
-  );
+  const users = [
+    {
+      username: 'admin1',
+      email: 'admin1@repairshop.com',
+      fullName: 'Juan Pérez',
+      password: bcryptAdapter.hash('admin123'),
+      role: UserRole.ADMIN,
+      isActive: true,
+    },
+    {
+      username: 'admin2',
+      email: 'admin2@repairshop.com',
+      fullName: 'María García',
+      password: bcryptAdapter.hash('admin123'),
+      role: UserRole.ADMIN,
+      isActive: true,
+    },
+    {
+      username: 'admin3',
+      email: 'admin3@repairshop.com',
+      fullName: 'Carlos Rodriguez',
+      password: bcryptAdapter.hash('admin123'),
+      role: UserRole.ADMIN,
+      isActive: false,
+    }
+  ];
 
-  // 3. Crear productos
-  const products = await ProductModel.insertMany(
-    seedData.products.map( product => {
+  const savedUsers = [];
+  for (const userData of users) {
+    const user = new UserEntity();
+    Object.assign(user, userData);
+    const savedUser = await userRepository.save(user);
+    savedUsers.push(savedUser);
+  }
 
-      return {
-        ...product,
-        user: users[ randomBetween0AndX( seedData.users.length - 1 ) ]._id,
-        category: categories[ randomBetween0AndX( seedData.categories.length - 1 )  ]._id
-      }
-
-
-    })
-  );
-
-
-
-
-  console.log('SEEDED');
-
-
+  console.log(`👥 Created ${savedUsers.length} admin users`);
+  console.log('✅ Database seeding completed!');
+  console.log('');
+  console.log('🔑 Login credentials:');
+  console.log('   Super Admin: superadmin / admin123');
+  console.log('   Admin 1: admin1 / admin123');
+  console.log('   Admin 2: admin2 / admin123');
+  console.log('   Admin 3: admin3 / admin123 (inactive)');
 }

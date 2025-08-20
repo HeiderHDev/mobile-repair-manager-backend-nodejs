@@ -1,11 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
+import { Repository } from 'typeorm';
 import { JwtAdapter } from '../../config';
-import { UserModel } from '../../data';
-import { UserEntity } from '../../domain';
-
+import { UserEntity as UserDB } from '../../data/mysql/entities/user.entity';
+import { MySQLDatabase } from '../../data';
+import { UserEntity } from '../../domain/entities/user.entity';
 
 export class AuthMiddleware {
-
 
   static async validateJWT( req: Request, res: Response, next: NextFunction ) {
 
@@ -15,18 +15,23 @@ export class AuthMiddleware {
 
     const token = authorization.split(' ').at(1) || '';
 
-
     try {
 
       const payload = await JwtAdapter.validateToken<{ id: string }>(token);
       if ( !payload ) return res.status(401).json({ error: 'Invalid token' })
       
-      const user = await UserModel.findById( payload.id );
-      if ( !user ) return res.status(401).json({ error: 'Invalid token - user' });
+      // Obtener repositorio de usuarios
+      const userRepository: Repository<UserDB> = MySQLDatabase.connection.getRepository(UserDB);
+      
+      const userDB = await userRepository.findOne({ where: { id: payload.id } });
+      if ( !userDB ) return res.status(401).json({ error: 'Invalid token - user not found' });
 
-      // todo: validar si el usuario está activo
+      // Validar si el usuario está activo
+      if ( !userDB.isActive ) return res.status(401).json({ error: 'User is inactive' });
 
-      req.body.user = UserEntity.fromObject(user);
+      // Crear entidad de dominio y agregarla al request
+      const userEntity = UserEntity.fromObject(userDB);
+      req.body.user = userEntity;
 
       next();
 
@@ -36,12 +41,5 @@ export class AuthMiddleware {
       res.status(500).json({ error: 'Internal server error' });
 
     }
-    
   }
-
-
-
-
 }
-
-
