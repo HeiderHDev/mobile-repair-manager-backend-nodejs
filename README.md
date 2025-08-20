@@ -320,4 +320,4 @@ npm run seed     # Poblar base de datos con datos de prueba
 
 ## 👨‍💻 Autor
 
-**Heider Rey Hernández** - Desarrollo Full Stack
+**Heider Rey Hernández** - Desarrollador Full Stack
