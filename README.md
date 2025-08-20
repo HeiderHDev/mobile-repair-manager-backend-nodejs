@@ -288,44 +288,9 @@ npm run seed     # Poblar base de datos con datos de prueba
 
 ### 🎯 Funcionalidades Planificadas
 
-1. **Notificaciones en Tiempo Real**
-   - WebSockets para actualizaciones live
-   - Notificaciones push para móviles
-   - Alertas de reparaciones completadas
-
-2. **Reportes y Analytics**
-   - Dashboard con métricas avanzadas
-   - Reportes de rentabilidad
-   - Análisis de tiempos de reparación
-   - Exportación a PDF/Excel
-
-3. **Gestión de Inventario**
-   - Control de repuestos
-   - Alertas de stock bajo
-   - Gestión de proveedores
-   - Historial de compras
-
-4. **Sistema de Facturación**
-   - Generación automática de facturas
-   - Integración con sistemas contables
-   - Gestión de pagos
-   - Estados de cuenta
-
-5. **Mejoras Técnicas**
-   - **Testing completo** (Unit, Integration, E2E)
-   - **Redis** para caché y sessions
-   - **Rate Limiting** para seguridad
-   - **Swagger/OpenAPI** para documentación
-   - **Monitoreo** con Prometheus/Grafana
+1. **Deployment y CI/CD**
    - **CI/CD** con GitHub Actions
-   - **Deployment** en AWS/Azure
-
-6. **Optimizaciones**
-   - **Lazy Loading** en consultas
-   - **Pagination** mejorada
-   - **Búsqueda avanzada** con filtros
-   - **Audit Logs** para trazabilidad
-   - **Backup automático** de base de datos
+   - **Deployment** en AWS
 
 ## 🐛 Solución de Problemas
 
@@ -353,26 +318,6 @@ npm run seed     # Poblar base de datos con datos de prueba
    PORT=3001
    ```
 
-## 🤝 Contribución
-
-1. Fork el proyecto
-2. Crear una rama feature (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit los cambios (`git commit -am 'Agregar nueva funcionalidad'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Crear un Pull Request
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
-
 ## 👨‍💻 Autor
 
-**Fernando Herrera** - Desarrollo Full Stack
-
----
-
-## 📞 Contacto y Soporte
-
-Para preguntas técnicas o soporte, crear un issue en el repositorio de GitHub.
-
-**¡Gracias por revisar este proyecto!** 🚀
+**Heider Rey Hernández** - Desarrollo Full Stack
