@@ -5,13 +5,17 @@ export class Validators {
       return uuidRegex.test(id);
     }
   
+    static isMongoID(id: string): boolean {
+      return this.isUUID(id);
+    }
+  
     static isPositiveInteger(id: string | number): boolean {
       const num = typeof id === 'string' ? parseInt(id, 10) : id;
       return Number.isInteger(num) && num > 0;
     }
-
+  
     static isEmail(email: string): boolean {
       const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       return emailRegex.test(email);
     }
-}
+  }

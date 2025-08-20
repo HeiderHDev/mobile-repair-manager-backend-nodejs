@@ -1,77 +1,96 @@
+import { Repository } from 'typeorm';
 import { JwtAdapter, bcryptAdapter, envs } from '../../config';
-import { UserModel } from '../../data';
-import { CustomError, LoginUserDto, RegisterUserDto, UserEntity } from '../../domain';
+import { UserEntity as UserDB } from '../../data/mysql/entities/user.entity';
+import { MySQLDatabase } from '../../data';
+import { CustomError, LoginUserDto, RegisterUserDto } from '../../domain';
+import { UserEntity } from '../../domain/entities/user.entity';
 import { EmailService } from './email.service';
-
-
-
 
 export class AuthService {
 
-  // DI
-  constructor(
-    // DI - Email Service
-    private readonly emailService: EmailService,
-  ) {}
+  private userRepository: Repository<UserDB>;
 
+  constructor(
+    private readonly emailService: EmailService,
+  ) {
+    this.userRepository = MySQLDatabase.connection.getRepository(UserDB);
+  }
 
   public async registerUser( registerUserDto: RegisterUserDto ) {
+    
+    const existUserByEmail = await this.userRepository.findOne({ 
+      where: { email: registerUserDto.email } 
+    });
+    if ( existUserByEmail ) throw CustomError.badRequest('Email already exist');
 
-    const existUser = await UserModel.findOne({ email: registerUserDto.email });
-    if ( existUser ) throw CustomError.badRequest('Email already exist');
+    const existUserByUsername = await this.userRepository.findOne({ 
+      where: { username: registerUserDto.username } 
+    });
+    if ( existUserByUsername ) throw CustomError.badRequest('Username already exist');
 
     try {
-      const user = new UserModel(registerUserDto);
-      
-      // Encriptar la contraseña
-      user.password = bcryptAdapter.hash( registerUserDto.password );
-      
-      await user.save();
+      const userDB = new UserDB();
+      userDB.username = registerUserDto.username;
+      userDB.email = registerUserDto.email;
+      userDB.fullName = registerUserDto.fullName;
+      userDB.password = bcryptAdapter.hash( registerUserDto.password );
+      userDB.role = registerUserDto.role;
+      userDB.isActive = true;
 
-      // Email de confirmación
-      await this.sendEmailValidationLink( user.email );
+      const savedUser = await this.userRepository.save(userDB);
 
-      const { password, ...userEntity } = UserEntity.fromObject(user);
+      await this.sendEmailValidationLink( savedUser.email );
 
-      const token = await JwtAdapter.generateToken({ id: user.id });
+      const userEntity = UserEntity.fromObject(savedUser);
+      const publicUserData = userEntity.getPublicData();
+
+      const token = await JwtAdapter.generateToken({ 
+        id: savedUser.id,
+        username: savedUser.username,
+        role: savedUser.role 
+      });
       if ( !token ) throw CustomError.internalServer('Error while creating JWT');
 
       return { 
-        user: userEntity, 
+        user: publicUserData, 
         token: token,
+        expiresIn: 86400
       };
 
     } catch (error) {
       throw CustomError.internalServer(`${ error }`);
     }
-
   }
 
-
   public async loginUser( loginUserDto: LoginUserDto ) {
+    const userDB = await this.userRepository.findOne({ 
+      where: { username: loginUserDto.username } 
+    });
+    if (!userDB) throw CustomError.badRequest('Invalid credentials');
 
-    const user = await UserModel.findOne({ email: loginUserDto.email });
-    if (!user) throw CustomError.badRequest('Email not exist');
+    const isMatching = bcryptAdapter.compare( loginUserDto.password, userDB.password );
+    if ( !isMatching ) throw CustomError.badRequest('Invalid credentials');
 
-    const isMatching = bcryptAdapter.compare( loginUserDto.password, user.password );
-    if ( !isMatching ) throw CustomError.badRequest('Password is not valid');
+    if ( !userDB.isActive ) throw CustomError.forbidden('User is inactive');
 
-
-    const { password, ...userEntity} = UserEntity.fromObject( user );
+    const userEntity = UserEntity.fromObject(userDB);
+    const publicUserData = userEntity.getPublicData();
     
-    const token = await JwtAdapter.generateToken({ id: user.id });
+    const token = await JwtAdapter.generateToken({ 
+      id: userDB.id,
+      username: userDB.username,
+      role: userDB.role 
+    });
     if ( !token ) throw CustomError.internalServer('Error while creating JWT');
 
     return {
-      user: userEntity,
+      user: publicUserData,
       token: token,
+      expiresIn: 86400
     }
-
   }
 
-
   private sendEmailValidationLink = async( email: string ) => {
-
     const token = await JwtAdapter.generateToken({ email });
     if ( !token ) throw CustomError.internalServer('Error getting token');
 
@@ -94,23 +113,16 @@ export class AuthService {
     return true;
   }
 
-
   public validateEmail = async(token:string) => {
-
     const payload = await JwtAdapter.validateToken(token);
     if ( !payload ) throw CustomError.unauthorized('Invalid token');
 
     const { email } = payload as { email: string };
     if ( !email ) throw CustomError.internalServer('Email not in token');
 
-    const user = await UserModel.findOne({ email });
-    if ( !user ) throw CustomError.internalServer('Email not exists');
-
-    user.emailValidated = true;
-    await user.save();
+    const userDB = await this.userRepository.findOne({ where: { email } });
+    if ( !userDB ) throw CustomError.internalServer('Email not exists');
 
     return true;
   }
-
-
 }

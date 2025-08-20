@@ -1,7 +1,7 @@
 import { regularExps } from '../../../config';
 import { UserRole } from '../../entities/user.entity';
 
-export class RegisterUserDto {
+export class CreateUserDto {
 
   private constructor(
     public username: string,
@@ -11,7 +11,7 @@ export class RegisterUserDto {
     public role: UserRole,
   ) {}
 
-  static create( object: { [key:string]:any } ): [string?, RegisterUserDto?] {
+  static create( object: { [key:string]:any } ): [string?, CreateUserDto?] {
     const { username, email, fullName, password, role } = object;
 
     if ( !username ) return ['Missing username'];
@@ -23,6 +23,6 @@ export class RegisterUserDto {
     if ( !role ) return ['Missing role'];
     if ( !Object.values(UserRole).includes(role) ) return ['Invalid role'];
 
-    return [undefined, new RegisterUserDto(username, email, fullName, password, role)];
+    return [undefined, new CreateUserDto(username, email, fullName, password, role)];
   }
 }

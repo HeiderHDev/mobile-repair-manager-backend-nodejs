@@ -2,6 +2,8 @@ import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { envs } from '../../config/envs';
 
+import { UserEntity } from './entities/user.entity';
+
 interface Options {
   host: string;
   port: number;
@@ -26,24 +28,19 @@ export class MySQLDatabase {
         password,
         database,
         
-        // Configuración para desarrollo
-        synchronize: envs.NODE_ENV === 'development', // Solo en desarrollo
+        synchronize: envs.NODE_ENV === 'development',
         logging: envs.NODE_ENV === 'development',
         
-        // Entidades (las iremos agregando paso a paso)
         entities: [
-          // 'src/data/mysql/entities/*.entity.ts'
+          UserEntity
         ],
         
-        // Migraciones
         migrations: ['src/data/migrations/*.ts'],
         
-        // Configuración adicional
         extra: {
           charset: 'utf8mb4_unicode_ci',
         },
         
-        // Configuración de pool de conexiones
         poolSize: 10,
         acquireTimeout: 60000,
         connectTimeout: 60000,
