@@ -1,19 +1,21 @@
 import { envs } from './config/envs';
-import { MongoDatabase } from './data';
+import { MySQLDatabase } from './data';
 import { AppRoutes } from './presentation/routes';
 import { Server } from './presentation/server';
 
-
-(async()=> {
+(async () => {
   main();
 })();
 
-
 async function main() {
 
-  await MongoDatabase.connect({
-    dbName: envs.MONGO_DB_NAME,
-    mongoUrl: envs.MONGO_URL,
+  // Conectar a MySQL
+  await MySQLDatabase.connect({
+    host: envs.DB_HOST,
+    port: envs.DB_PORT,
+    username: envs.DB_USERNAME,
+    password: envs.DB_PASSWORD,
+    database: envs.DB_DATABASE,
   });
 
   const server = new Server({
