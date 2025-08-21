@@ -13,6 +13,12 @@ Este proyecto fue desarrollado como parte de una prueba técnica que incluye:
 - Control detallado de reparaciones
 - Dashboard con estadísticas
 
+## 🎬 Demostración en Video
+
+**[🎥 Ver Demo Completa de la Aplicación](https://drive.google.com/file/d/1wXpUsmYcPuZC1gWTjLEaRKHbi1eyDGC6/view?usp=sharing)**
+
+*Demostración práctica de todas las funcionalidades implementadas: autenticación, gestión de clientes, administración de teléfonos, control de reparaciones y navegación completa de la aplicación.*
+
 ## 🛠️ Tecnologías Utilizadas
 
 ### Backend Stack
